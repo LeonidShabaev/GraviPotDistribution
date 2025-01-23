@@ -1,0 +1,2 @@
+# GraviPotDistribution
+Gravitatonal potential distribution generator
