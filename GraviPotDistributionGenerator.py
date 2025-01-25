@@ -43,16 +43,16 @@ nu = 1.9992 * n - 0.3271
 # Density distribution profile of the substance
 def generation_bulge_density_profile(r):
     bulge_profile = np.exp(-nu * ((r / Rrhob_e) ** (1 / n) - 1))    # Sersic profile in essence
-    normalized_bulge_profile = (bulge_profile / np.max(bulge_profile))
-    densed_bulge_profile = rhob_0 * normalized_bulge_profile
-    return densed_bulge_profile
+    normalized_bulge_profile = bulge_profile / np.max(bulge_profile)
+    output_bulge_profile = rhob_0 * normalized_bulge_profile
+    return output_bulge_profile
 
 # Density distribution profile of the substance
 def generation_disk_density_profile(r):
     disk_profile = np.exp(-(r / Rrhod_e))
-    normalized_disk_profile = (disk_profile / np.max(disk_profile))
-    densed_disk_profile = rhod_0 * normalized_disk_profile
-    return densed_disk_profile
+    normalized_disk_profile = disk_profile / np.max(disk_profile)
+    output_disk_profile = rhod_0 * normalized_disk_profile
+    return output_disk_profile
 
 # Density distribution profile of the substance
 def generation_total_density_profile(r):
