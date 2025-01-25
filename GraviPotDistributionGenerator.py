@@ -134,7 +134,7 @@ making_fig1()
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Making density distribution on grid
-def making_fig():
+def making_fig2():
     fig2, ax2 = plt.subplots(figsize=(6, 6))
     ax2 = plt.gca()
 
@@ -166,4 +166,4 @@ def making_fig():
 
     return fig2, ax2
 
-making_fig()
+making_fig2()
