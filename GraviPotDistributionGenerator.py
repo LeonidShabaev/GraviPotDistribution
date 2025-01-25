@@ -24,7 +24,7 @@ scale = kpc                                 # Scale
 N_star_init = 5e12                          # Initial number of stars
 
 # Density factors: solar mass multiplied by initial number of stars
-initial_usual_density_factor = M_Sun * N_star_init
+initial_density_factor = M_Sun * N_star_init
 
 # Bulge parameters
 rhob_0 = 1              # Initial bulge density
@@ -143,7 +143,7 @@ def making_fig2():
 
     # Compute densities
     Distances = np.linalg.norm(Points, axis=1)
-    Density = initial_usual_density_factor * generation_total_density_profile(Distances).reshape(upscale_factor, upscale_factor)
+    Density = initial_density_factor * generation_total_density_profile(Distances).reshape(upscale_factor, upscale_factor)
 
     # Plot usual matter density
     im = ax2.imshow(
