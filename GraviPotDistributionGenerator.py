@@ -18,10 +18,10 @@ M_Sun = 1.9891e30           # Mass of the Sun (kg)
 kpc = 1e3 * parsec          # Kiloparsec
 
 # Pixelation parameters
-pixel_axis_size = 15                        # Number of pixels along the axes from zero
+pixel_axis_size = 25                        # Number of pixels along the axes from zero
 upscale_factor = 2 * pixel_axis_size * 1    # Map grid size (change last multiplier to integer)
 scale = kpc                                 # Scale
-N_star_init = 5e12                          # Initial number of stars
+N_star_init = 2e11                          # Initial number of stars
 
 # Density factors: solar mass multiplied by initial number of stars
 initial_density_factor = M_Sun * N_star_init
@@ -40,21 +40,21 @@ nu = 1.9992 * n - 0.3271
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-# Density distribution profile of the substance
+# Density distribution of bulge profile of the substance
 def generation_bulge_density_profile(r):
     bulge_profile = np.exp(-nu * ((r / Rrhob_e) ** (1 / n) - 1))    # Sersic profile in essence
     normalized_bulge_profile = bulge_profile / np.max(bulge_profile)
     output_bulge_profile = rhob_0 * normalized_bulge_profile
     return output_bulge_profile
 
-# Density distribution profile of the substance
+# Density distribution of disk profile of the substance
 def generation_disk_density_profile(r):
     disk_profile = np.exp(-(r / Rrhod_e))
     normalized_disk_profile = disk_profile / np.max(disk_profile)
     output_disk_profile = rhod_0 * normalized_disk_profile
     return output_disk_profile
 
-# Density distribution profile of the substance
+# Density distribution of total profile of the substance
 def generation_total_density_profile(r):
     total_profile = generation_bulge_density_profile(r) + generation_disk_density_profile(r)
     return total_profile
@@ -62,13 +62,17 @@ def generation_total_density_profile(r):
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 # Generation points on a grid
-def generation_points_on_grid():
+def generation_points_on_grid(density_profile_func: callable):
     step_size = 2 * pixel_axis_size / upscale_factor
     x = np.arange(-pixel_axis_size + step_size / 2, pixel_axis_size, step_size)
     y = np.arange(-pixel_axis_size + step_size / 2, pixel_axis_size, step_size)
     X, Y = np.meshgrid(x, y)
     points = np.vstack([X.ravel(), Y.ravel()]).T * scale
-    return points
+
+    point_profile = density_profile_func(np.linalg.norm(points, axis=1))
+    point_mass = initial_density_factor * point_profile / upscale_factor
+    
+    return points, point_mass, X
 
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -135,35 +139,33 @@ making_fig1()
 
 # Making density distribution on grid
 def making_fig2():
-    fig2, ax2 = plt.subplots(figsize=(6, 6))
+    fig2, ax2 = plt.subplots(figsize=(7, 7))
     ax2 = plt.gca()
 
-    # Generate density data
-    Points = generation_points_on_grid()
+    # Generate points, masses, and grid
+    points, masses, X = generation_points_on_grid(generation_total_density_profile)
 
-    # Compute densities
-    Distances = np.linalg.norm(Points, axis=1)
-    Density = initial_density_factor * generation_total_density_profile(Distances).reshape(upscale_factor, upscale_factor)
+    # Compute gravitational potential on the grid
+    potential = gravitational_potential(masses, points, points)
 
-    # Plot usual matter density
-    im = ax2.imshow(
-        Density,
-        extent=(-pixel_axis_size, pixel_axis_size, -pixel_axis_size, pixel_axis_size),
-        cmap="Blues_r",
-        origin="lower",
-        aspect="equal"
-    )
-    ax2.set_title("Density Distribution Grid")
-    ax2.set_xlabel("X (kpc)")
-    ax2.set_ylabel("Y (kpc)")
+    # Reshape potential to match grid dimensions
+    potential_grid = potential.reshape(X.shape)
 
-    # Colorbar
+    im = ax2.imshow(potential_grid, extent=(-pixel_axis_size, pixel_axis_size, -pixel_axis_size, pixel_axis_size),
+                    origin='upper', cmap='Blues')
+
+    # Add colorbar
     divider = make_axes_locatable(ax2)
     cax = divider.append_axes("right", size="5%", pad=0.1)
-    fig2.colorbar(im, cax=cax)
+    cbar = plt.colorbar(im, cax=cax)
+
+    # Add labels and title
+    ax2.set_title('Gravitational Potential Distribution Map')
+    ax2.set_xlabel('X (kpc)')
+    ax2.set_ylabel('Y (kpc)')
 
     plt.show()
-
+    
     return fig2, ax2
 
 making_fig2()
