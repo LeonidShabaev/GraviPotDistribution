@@ -1,4 +1,4 @@
-# Rays, Perpendiculars and Intersection Points Generator
+# Galaxy Gravitational Potential Distribution Generator
 
 About the code
 --------------
